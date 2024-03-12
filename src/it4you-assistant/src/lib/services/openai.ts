@@ -1,9 +1,6 @@
 import OpenAI from 'openai';
 import { Assistant } from 'openai/resources/beta/assistants/assistants';
 import { Thread } from 'openai/resources/beta/threads/threads';
-import * as https from 'https';
-import { HttpsProxyAgent } from 'https-proxy-agent';
-import { HttpProxyAgent } from 'http-proxy-agent';
 
 export default class OpenAIService {
 	private thread: Thread | undefined = undefined;
@@ -30,7 +27,7 @@ export default class OpenAIService {
 					'You work for the swiss stock exchange SIX. There are also other partner firms there. ' +
 					'People will ask you questions all around this topic. Be friendly and clear and easy to understand because you also have younger audience.',
 				file_ids: this.get_file_ids(),
-				tools: [{"type": "retrieval"}]
+				tools: [{ type: 'retrieval' }]
 			});
 			this.isInitialized = true;
 		}
