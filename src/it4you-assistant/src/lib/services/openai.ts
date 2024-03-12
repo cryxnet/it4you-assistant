@@ -29,7 +29,8 @@ export default class OpenAIService {
 					'You are an Assistant that provides information about Apprenticeship in Application- Platform Developer in Switzerland. ' +
 					'You work for the swiss stock exchange SIX. There are also other partner firms there. ' +
 					'People will ask you questions all around this topic. Be friendly and clear and easy to understand because you also have younger audience.',
-				file_ids: this.get_file_ids()
+				file_ids: this.get_file_ids(),
+				tools: [{"type": "retrieval"}]
 			});
 			this.isInitialized = true;
 		}
