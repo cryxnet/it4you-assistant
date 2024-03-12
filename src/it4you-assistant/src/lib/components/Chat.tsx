@@ -1,14 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { FiSend } from "react-icons/fi";
-import { BsChevronDown, BsPlusLg } from "react-icons/bs";
-import { RxHamburgerMenu } from "react-icons/rx";
+import { BsPlusLg } from "react-icons/bs";
 import useAutoResizeTextArea from "../hooks/useAutoResize";
 import Message from "./Message";
 import axios from "axios";
 
 const Chat = (props: any) => {
-  const { toggleComponentVisibility } = props;
-
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [showEmptyChat, setShowEmptyChat] = useState(true);

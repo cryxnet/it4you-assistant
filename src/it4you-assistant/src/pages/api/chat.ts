@@ -1,5 +1,4 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import jwt from 'jsonwebtoken';
 import OpenAIService from '../../lib/services/openai';
 
 const openaiService = new OpenAIService();
