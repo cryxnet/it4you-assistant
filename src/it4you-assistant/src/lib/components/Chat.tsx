@@ -105,7 +105,7 @@ const Chat = (props: any) => {
       <div className="relative h-full w-full transition-width flex flex-col overflow-hidden items-stretch flex-1">
         <div className="flex-1 overflow-hidden">
           <div className="react-scroll-to-bottom--css-ikyem-79elbk h-full dark:bg-gray-800">
-            <div className="react-scroll-to-bottom--css-ikyem-1n7m0yu">
+		  <div className="react-scroll-to-bottom--css-ikyem-1n7m0yu chat-history overflow-y-auto max-h-[calc(100vh-200px)]">
               {!showEmptyChat && conversation.length > 0 ? (
                 <div className="flex flex-col items-center text-sm 0">
                   {conversation.map((message, index) => (
