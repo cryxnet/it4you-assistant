@@ -163,7 +163,7 @@ const Chat = (props: any) => {
           </form>
           <div className="px-3 pt-2 pb-3 text-center text-xs text-black/50 dark:text-white/50 md:px-4 md:pt-3 md:pb-6">
             <span>
-              Build by <a style={{ color: '#afbb95'}} target="_blank" href='https://linkedin.com/in/ruben-manser'>Ruben Manser</a>
+              Build by <a style={{ color: '#afbb95'}} target="_blank" href='https://linkedin.com/in/ruben-manser'>Ruben Manser</a> |  <a style={{ color: '#afbb95'}} target="_blank" href='https://github.com/cryxnet/it4you-assistant'>Source Code</a>
             </span>
           </div>
         </div>
