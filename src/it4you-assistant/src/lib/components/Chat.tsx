@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { FiSend } from "react-icons/fi";
+import { FiSend, FiMic, FiMicOff } from "react-icons/fi";
 import { BsPlusLg } from "react-icons/bs";
 import useAutoResizeTextArea from "../hooks/useAutoResize";
 import Message from "./Message";
 import axios from "axios";
+import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
 
 const Chat = (props: any) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -13,6 +14,47 @@ const Chat = (props: any) => {
   const [message, setMessage] = useState("");
   const textAreaRef = useAutoResizeTextArea();
   const bottomOfChatRef = useRef<HTMLDivElement>(null);
+  const [isRecording, setIsRecording] = useState(false); // New state for recording status
+
+  const {
+    transcript,
+    listening,
+    resetTranscript,
+    browserSupportsSpeechRecognition,
+  } = useSpeechRecognition();
+
+
+
+  const toggleRecording = () => {
+ 
+    if (isRecording) {
+      SpeechRecognition.stopListening();
+    } else {
+      SpeechRecognition.startListening({ continuous: true });
+    }
+    setIsRecording(!isRecording);
+  }
+
+  // When the component unmounts or before a new recording session starts, make sure to stop listening.
+  useEffect(() => {
+    return () => {
+      SpeechRecognition.stopListening();
+    };
+  }, []);
+
+  useEffect(() => {
+    setMessage(transcript);
+  }, [transcript]);
+
+
+  useEffect(() => {
+    if (!browserSupportsSpeechRecognition) {
+      console.error("Browser doesn't support speech recognition.");
+    }
+  }, []);
+
+
+
 
 
   useEffect(() => {
@@ -27,6 +69,13 @@ const Chat = (props: any) => {
       bottomOfChatRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [conversation]);
+
+  const speakText = (text: string) => {
+    const speechSynthesis = window.speechSynthesis;
+    const utterance = new SpeechSynthesisUtterance(text);
+    speechSynthesis.speak(utterance);
+  };
+
 
   const sendMessage = async (e: any) => {
     e.preventDefault();
@@ -60,6 +109,8 @@ const Chat = (props: any) => {
           { content: message, role: "user" },
           { content: response.data.response, role: "system" },
         ]);
+
+        speakText(response.data.response)
 
 		setIsLoading(false);
     } catch (error: any) {
@@ -123,6 +174,7 @@ const Chat = (props: any) => {
             </div>
           </div>
         </div>
+  
         <div className="absolute bottom-0 left-0 w-full border-t md:border-t-0 dark:border-white/20 md:border-transparent md:dark:border-transparent md:bg-vert-light-gradient bg-white dark:bg-gray-800 md:!bg-transparent dark:md:bg-vert-dark-gradient pt-2">
           <form className="stretch mx-2 flex flex-row gap-3 last:mb-2 md:mx-4 md:last:mb-6 lg:mx-auto lg:max-w-2xl xl:max-w-3xl">
             <div className="relative flex flex-col h-full flex-1 items-stretch md:flex-col">
@@ -133,7 +185,8 @@ const Chat = (props: any) => {
                   </div>
                 </div>
               ) : null}
-              <div className="flex flex-col w-full py-2 flex-grow md:py-3 md:pl-4 relative border bg-white  dark:text-white dark:bg-gray-700 rounded-md shadow-[0_0_10px_rgba(0,0,0,0.10)] dark:shadow-[0_0_15px_rgba(0,0,0,0.10)]">
+            <div className="flex items-center justify-between bg-white p-4 rounded-b-lg shadow">
+
 			  <textarea
 				ref={textAreaRef}
 				value={message}
@@ -151,13 +204,23 @@ const Chat = (props: any) => {
 				onChange={(e) => setMessage(e.target.value)}
 				onKeyDown={handleKeypress}
 				></textarea>
-                <button
-                  disabled={isLoading || message?.length === 0}
-                  onClick={sendMessage}
-                  className="absolute p-1 rounded-md bottom-1.5 md:bottom-3 bg-transparent disabled:bg-gray-500 right-1 md:right-2 disabled:opacity-40"
-                >
-                  <FiSend className="h-4 w-4 " />
-                </button>
+                <div className="flex items-center space-x-2">
+    <button
+      onClick={toggleRecording}
+      className={`p-3 rounded-full transition-colors ${isRecording ? 'bg-red-500' : 'bg-gray-200 hover:bg-gray-300'}`}
+      aria-label="Microphone"
+    >
+      <FiMic className={`w-5 h-5 ${isRecording ? 'text-white' : 'text-gray-500'}`} />
+    </button>
+    <button
+      disabled={isLoading || message?.length === 0}
+      onClick={sendMessage}
+      className="inline-flex items-center justify-center p-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 hover:bg-gradient-to-r hover:from-blue-600 hover:to-purple-700 disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed shadow-lg transition-all duration-300 ease-in-out"
+    >
+      <FiSend className="w-5 h-5 text-white transition-colors duration-300 ease-in-out disabled:text-gray-500" />
+    </button>
+  </div>
+
               </div>
             </div>
           </form>
