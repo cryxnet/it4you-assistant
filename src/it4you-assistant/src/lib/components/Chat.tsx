@@ -8,27 +8,29 @@ import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognitio
 
 const Chat = (props: any) => {
     const [isLoading, setIsLoading] = useState(false);
+    const [sendFlag, setSendFlag] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
     const [showEmptyChat, setShowEmptyChat] = useState(true);
     const [conversation, setConversation] = useState<any[]>([]);
     const [message, setMessage] = useState('');
     const textAreaRef = useAutoResizeTextArea();
     const bottomOfChatRef = useRef<HTMLDivElement>(null);
-    const [isRecording, setIsRecording] = useState(false); 
+    const [isRecording, setIsRecording] = useState(false);
+    const [suggestions, setSuggestions] = useState([
+        'Was macht man als Applikationsentwickler?',
+        'Was für Lehrstellen bietet die SIX an?',
+        'Wie kann ich mich bei der SIX bewerben?',
+        'Was für ICT Lehrstellen gibt es?',
+    ]);
 
     const { transcript, browserSupportsSpeechRecognition } = useSpeechRecognition();
 
-    const toggleRecording = (e: any) => {
-        e.preventDefault(); 
-
-        if (isRecording) {
-            SpeechRecognition.stopListening();
-            setIsRecording(false); 
-        } else {
-            SpeechRecognition.startListening({ continuous: true });
-            setIsRecording(true); 
-        }
-    };
+    useEffect(() => {
+      if (sendFlag && message.trim().length > 0) {
+        sendMessage();
+        setSendFlag(false); // Reset the flag after sending the message
+      }
+    }, [sendFlag, message]); // Depend on both sendFlag and message
 
     // When the component unmounts or before a new recording session starts, make sure to stop listening.
     useEffect(() => {
@@ -37,6 +39,12 @@ const Chat = (props: any) => {
         };
     }, []);
 
+    useEffect(() => {
+      if (bottomOfChatRef.current) {
+        bottomOfChatRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, [conversation]);
+  
     useEffect(() => {
         setMessage(transcript);
     }, [transcript]);
@@ -60,6 +68,18 @@ const Chat = (props: any) => {
         }
     }, [conversation]);
 
+    const toggleRecording = (e: any) => {
+        e.preventDefault();
+
+        if (isRecording) {
+            SpeechRecognition.stopListening();
+            setIsRecording(false);
+        } else {
+            SpeechRecognition.startListening({ continuous: true });
+            setIsRecording(true);
+        }
+    };
+
     const speakText = (text: string) => {
         const speechSynthesis = window.speechSynthesis;
         const utterance = new SpeechSynthesisUtterance(text);
@@ -67,8 +87,10 @@ const Chat = (props: any) => {
         speechSynthesis.speak(utterance);
     };
 
-    const sendMessage = async (e: any) => {
-      e.preventDefault();
+    const sendMessage = async (e?: any) => {
+      if (e) {
+          e.preventDefault();
+      }
   
       if (message.trim().length < 1) {
           setErrorMessage('Please enter a message.');
@@ -79,32 +101,37 @@ const Chat = (props: any) => {
       setErrorMessage('');
   
       const userMessage = { content: message, role: 'user' };
-      const botTypingMessage = { content: null, role: 'system' }; 
+      const botTypingMessage = { content: null, role: 'system' };
   
-      // Immediately update the conversation with user's message and a typing indicator for the bot
       setConversation(prev => [...prev, userMessage, botTypingMessage]);
       setMessage('');
       setShowEmptyChat(false);
   
       try {
           const response = await axios.post('/api/chat', { message: message });
-          // Replace the typing indicator with the actual bot response
           setConversation(prev => [...prev.slice(0, -1), { content: response.data.response, role: 'system' }]);
           speakText(response.data.response);
       } catch (error: any) {
           console.error(error);
           setErrorMessage(error.message || 'An error occurred');
+      } finally {
+          setIsLoading(false);
       }
-  
-      setIsLoading(false);
   };
-    const handleKeypress = (e: any) => {
-        // It's triggers by pressing the enter key
-        if (e.keyCode == 13 && !e.shiftKey) {
-            sendMessage(e);
-            e.preventDefault();
-        }
-    };
+
+  const insertSuggestion = (suggestion: string) => {
+    setMessage(suggestion); // This will trigger the useEffect above
+    setSendFlag(true); // Set the flag to true to send the message
+  };
+
+
+  const handleKeypress = (e: any) => {
+    // Triggers by pressing the enter key
+    if (e.keyCode === 13 && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+};
 
     const clearChat = () => {
         // Function to clear the chat
@@ -113,8 +140,8 @@ const Chat = (props: any) => {
     };
 
     return (
-        <div className="flex max-w-full flex-1 flex-col">
-            <nav className="sticky top-0 z-10 flex justify-between items-center bg-gray-800 p-4 text-white">
+      <div className="flex flex-col max-w-full flex-1">
+      <nav className="sticky top-0 z-10 flex justify-between items-center bg-gray-800 p-4 text-white">
                 <img src="/logo.png" alt="Logo" className="h-8 w-auto" />
                 <button
                     onClick={clearChat}
@@ -138,13 +165,15 @@ const Chat = (props: any) => {
                                     {conversation.map((message, index) => (
                                         <Message key={index} message={message} />
                                     ))}
-                                    <div className="w-full h-32 md:h-48 flex-shrink-0"></div>
                                     <div ref={bottomOfChatRef}></div>
                                 </div>
                             ) : null}
                             {showEmptyChat ? (
-                                <div className="relative w-full flex flex-col h-full">
-                                    <h1 className="text-2xl sm:text-4xl font-semibold text-center text-gray-200 dark:text-gray-600 flex gap-2 items-center justify-center h-screen">
+                                <div
+                                    className="w-full h-full flex flex-col items-center justify-center"
+                                    style={{ paddingTop: '15%' }}
+                                >
+                                    <h1 className="text-2xl sm:text-4xl font-semibold text-center text-gray-200 dark:text-gray-600 flex gap-2 items-center justify-center">
                                         IT4YOU GPT
                                     </h1>
                                 </div>
@@ -153,8 +182,23 @@ const Chat = (props: any) => {
                         </div>
                     </div>
                 </div>
-
                 <div className="absolute bottom-0 left-0 w-full border-t md:border-t-0 dark:border-white/20 md:border-transparent md:dark:border-transparent md:bg-vert-light-gradient bg-white dark:bg-gray-800 md:!bg-transparent dark:md:bg-vert-dark-gradient pt-2">
+                    {showEmptyChat ? (
+                        <div className="full flex mb-2 justify-center items-end bg-transparent">
+                            <div className="grid grid-cols-2 gap-2">
+                                {suggestions.map((suggestion, index) => (
+                                    <button
+                                        key={index}
+                                        onClick={() => insertSuggestion(suggestion)}
+                                        className="block max-w-sm p-3 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
+                                        style={{ maxWidth: '330px' }}
+                                    >
+                                        {suggestion}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    ) : null}
                     <form className="stretch mx-2 flex flex-row gap-3 last:mb-2 md:mx-4 md:last:mb-6 lg:mx-auto lg:max-w-2xl xl:max-w-3xl">
                         <div className="relative flex flex-col h-full flex-1 items-stretch md:flex-col">
                             {errorMessage ? (

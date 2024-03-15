@@ -8,7 +8,7 @@ import PrivacyPolicyPopup from '@/lib/components/PrivacyPolicyPopup';
 export default function App({ Component, pageProps }: AppProps) {
     return (
         <NextUIProvider>
-          <PrivacyPolicyPopup />
+            <PrivacyPolicyPopup />
             <Component {...pageProps} />
         </NextUIProvider>
     );
