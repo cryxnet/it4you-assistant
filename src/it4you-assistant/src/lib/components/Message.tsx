@@ -1,6 +1,6 @@
 import { SiOpenai } from 'react-icons/si';
 import { HiUser } from 'react-icons/hi';
-import { TbCursorText } from 'react-icons/tb';
+import { AiOutlineLoading } from 'react-icons/ai';
 
 const Message = (props: any) => {
     const { message } = props;
@@ -30,7 +30,7 @@ const Message = (props: any) => {
                             <div className="min-h-20 flex flex-col items-start gap-4 whitespace-pre-wrap break-words">
                                 <div className="markdown prose w-full break-words dark:prose-invert dark">
                                     {!isUser && text === null ? (
-                                        <TbCursorText className="h-6 w-6 animate-pulse" />
+                                       <AiOutlineLoading className="h-6 w-6 animate-spin" style={{ animation: 'spin 1s linear infinite' }} />
                                     ) : (
                                         <p>{text}</p>
                                     )}

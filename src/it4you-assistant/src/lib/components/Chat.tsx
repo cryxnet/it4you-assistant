@@ -79,7 +79,7 @@ const Chat = (props: any) => {
       setErrorMessage('');
   
       const userMessage = { content: message, role: 'user' };
-      const botTypingMessage = { content: 'typing...', role: 'system', isTyping: true }; 
+      const botTypingMessage = { content: null, role: 'system' }; 
   
       // Immediately update the conversation with user's message and a typing indicator for the bot
       setConversation(prev => [...prev, userMessage, botTypingMessage]);
