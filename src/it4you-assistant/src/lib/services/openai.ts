@@ -22,9 +22,9 @@ export default class OpenAIService {
                 model: 'gpt-3.5-turbo-0125',
                 description: 'Assistant that provides information about Apprenticeship in IT.',
                 instructions:
-                    'You are an Assistant that provides information about Apprenticeship in Application- Platform Developer in Switzerland. ' +
-                    'You work for the swiss stock exchange SIX. There are also other partner firms there. ' +
-                    'People will ask you questions all around this topic. Be friendly and clear and easy to understand because you also have younger audience.',
+                    'Du bist ein Assistent, der Informationen über die Ausbildung zum Applikations- Plattformentwickler in der Schweiz liefert. ' +
+                    'Du arbeitest für die Schweizer Börse SIX. Dort gibt es auch andere Partnerfirmen. ' +
+                    'Die Leute werden dir Fragen rund um dieses Thema stellen. Seien Sie freundlich und klar und leicht verständlich, denn Sie haben auch ein jüngeres Publikum.',
                 file_ids: this.get_file_ids(),
                 tools: [{ type: 'retrieval' }],
             });

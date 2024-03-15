@@ -14,21 +14,22 @@ const Chat = (props: any) => {
     const [message, setMessage] = useState('');
     const textAreaRef = useAutoResizeTextArea();
     const bottomOfChatRef = useRef<HTMLDivElement>(null);
-    const [isRecording, setIsRecording] = useState(false); // New state for recording status
+    const [isRecording, setIsRecording] = useState(false); 
 
-    const { transcript, listening, resetTranscript, browserSupportsSpeechRecognition } = useSpeechRecognition();
+    const { transcript, browserSupportsSpeechRecognition } = useSpeechRecognition();
 
     const toggleRecording = (e: any) => {
-        e.preventDefault(); // Prevent any form submission/default button behavior
+        e.preventDefault(); 
 
         if (isRecording) {
             SpeechRecognition.stopListening();
-            setIsRecording(false); // Update recording state immediately
+            setIsRecording(false); 
         } else {
             SpeechRecognition.startListening({ continuous: true });
-            setIsRecording(true); // Update recording state immediately
+            setIsRecording(true); 
         }
     };
+
     // When the component unmounts or before a new recording session starts, make sure to stop listening.
     useEffect(() => {
         return () => {
@@ -66,34 +67,37 @@ const Chat = (props: any) => {
         speechSynthesis.speak(utterance);
     };
 
-    const sendMessage = async (e: { preventDefault: () => void; }) => {
-        e.preventDefault(); // Prevent form submission and page refresh
-
-        if (message.trim().length < 1) {
-            setErrorMessage('Please enter a message.');
-            return;
-        }
-
-        setIsLoading(true);
-        setErrorMessage('');
-
-        try {
-            const response = await axios.post('/api/chat', { message: message });
-            const newMessage = { content: message, role: 'user' };
-            const newResponse = { content: response.data.response, role: 'system' };
-
-            setConversation((conversation) => [...conversation, newMessage, newResponse]);
-            setMessage('');
-            setShowEmptyChat(false);
-            speakText(response.data.response);
-            setIsLoading(false);
-        } catch (error: any) {
-            console.error(error);
-            setErrorMessage(error.message || 'An error occurred');
-            setIsLoading(false);
-        }
-    };
-
+    const sendMessage = async (e: any) => {
+      e.preventDefault();
+  
+      if (message.trim().length < 1) {
+          setErrorMessage('Please enter a message.');
+          return;
+      }
+  
+      setIsLoading(true);
+      setErrorMessage('');
+  
+      const userMessage = { content: message, role: 'user' };
+      const botTypingMessage = { content: 'typing...', role: 'system', isTyping: true }; 
+  
+      // Immediately update the conversation with user's message and a typing indicator for the bot
+      setConversation(prev => [...prev, userMessage, botTypingMessage]);
+      setMessage('');
+      setShowEmptyChat(false);
+  
+      try {
+          const response = await axios.post('/api/chat', { message: message });
+          // Replace the typing indicator with the actual bot response
+          setConversation(prev => [...prev.slice(0, -1), { content: response.data.response, role: 'system' }]);
+          speakText(response.data.response);
+      } catch (error: any) {
+          console.error(error);
+          setErrorMessage(error.message || 'An error occurred');
+      }
+  
+      setIsLoading(false);
+  };
     const handleKeypress = (e: any) => {
         // It's triggers by pressing the enter key
         if (e.keyCode == 13 && !e.shiftKey) {
@@ -141,7 +145,7 @@ const Chat = (props: any) => {
                             {showEmptyChat ? (
                                 <div className="relative w-full flex flex-col h-full">
                                     <h1 className="text-2xl sm:text-4xl font-semibold text-center text-gray-200 dark:text-gray-600 flex gap-2 items-center justify-center h-screen">
-                                        🤖 IT4YOU GPT
+                                        IT4YOU GPT
                                     </h1>
                                 </div>
                             ) : null}
@@ -189,9 +193,9 @@ const Chat = (props: any) => {
                                     <button
                                         disabled={isLoading || message?.length === 0}
                                         onClick={sendMessage}
-                                        className="inline-flex items-center justify-center p-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 hover:bg-gradient-to-r hover:from-blue-600 hover:to-purple-700 disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed shadow-lg transition-all duration-300 ease-in-out"
+                                        className="inline-flex items-center justify-center p-3 rounded-full bg-gradient-to-r from-red-500 to-red-600 hover:bg-gradient-to-r hover:from-red-600 hover:to-red-700 disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed shadow-lg transition-all duration-300 ease-in-out"
                                     >
-                                        <FiSend className="w-5 h-5 text-white transition-colors duration-300 ease-in-out disabled:text-gray-500" />
+                                        <FiSend className="text-white transition-colors duration-300 ease-in-out disabled:text-gray-500" />
                                     </button>
                                 </div>
                             </div>
